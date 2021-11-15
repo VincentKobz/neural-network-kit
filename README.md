@@ -1,4 +1,4 @@
-# neural network image kit
+# NEURAL NETWORK IMAGE KIT
 Simple neural network tools in order to recognize pictures
 
 ## Get started
