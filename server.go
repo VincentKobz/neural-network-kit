@@ -32,14 +32,14 @@ func launcheNeuralNetwork() {
 	target := [][]float64{{1}, {1}, {1}, {0}}
 
 	for i := 0; i < 10000; i++ {
-		neural.Training(data[0], target[0], net)
-		neural.Training(data[1], target[1], net)
-		neural.Training(data[2], target[2], net)
-		neural.Training(data[3], target[3], net)
+		neural.Training(data[0], target[0], &net)
+		neural.Training(data[1], target[1], &net)
+		neural.Training(data[2], target[2], &net)
+		neural.Training(data[3], target[3], &net)
 	}
 
-	neural.ShowResult(data[0], net)
-	neural.ShowResult(data[1], net)
-	neural.ShowResult(data[2], net)
-	neural.ShowResult(data[3], net)
+	neural.ShowResult(data[0], &net)
+	neural.ShowResult(data[1], &net)
+	neural.ShowResult(data[2], &net)
+	neural.ShowResult(data[3], &net)
 }

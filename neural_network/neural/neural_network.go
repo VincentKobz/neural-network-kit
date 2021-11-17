@@ -12,7 +12,6 @@ func init() {
 
 // Network struct: inputs, hiddens outputs : Number of intputs, hiddens and outputs layers
 type Network struct {
-	inputs, hiddens, outputs       int
 	networkInput                   []float64
 	hiddenGradient, outputGradient []float64
 
@@ -22,88 +21,87 @@ type Network struct {
 }
 
 // UpdateWeights: Update the network weights after calculating the gradient
-func UpdateWeights(net Network) {
-	for i := 0; i < net.hiddens; i++ {
-		for j := 0; j < net.outputs; j++ {
-			net.outputWeights[i][j] += net.outputGradient[j] * net.hiddenResult[i] * net.rate
+func UpdateWeights(net *Network) {
+	for i, elt := range net.hiddenResult {
+		for j, elt2 := range net.outputGradient {
+			net.outputWeights[i][j] += elt2 * elt * net.rate
 		}
 	}
 
-	for i := 0; i < net.inputs; i++ {
-		for j := 0; j < net.hiddens; j++ {
-			net.hiddenWeights[i][j] += net.hiddenGradient[j] * net.networkInput[i] * net.rate
+	for i, elt := range net.networkInput {
+		for j, elt2 := range net.hiddenGradient {
+			net.hiddenWeights[i][j] += elt2 * elt * net.rate
 		}
 	}
 }
 
 // UpdateNetwork: Calculate all network outputs
-func UpdateNetwork(net Network) {
+func UpdateNetwork(net *Network) {
 	// Calculate output for hidden layer
-	for i := 0; i < net.hiddens; i++ {
+	for i := 0; i < len(net.hiddenResult); i++ {
 		var x float64
-		for j := 0; j < net.inputs; j++ {
-			x += net.hiddenWeights[j][i] * net.networkInput[j]
+		for j, elt2 := range net.networkInput {
+			x += net.hiddenWeights[j][i] * elt2
 		}
 		net.hiddenResult[i] = sigmoide(x)
 	}
 
 	// Calculate output for output layer
-	for i := 0; i < net.outputs; i++ {
+	for i := 0; i < len(net.outputResult); i++ {
 		var x float64
-		for j := 0; j < net.hiddens; j++ {
-			x += net.outputWeights[j][i] * net.hiddenResult[j]
+		for j, elt2 := range net.hiddenResult {
+			x += net.outputWeights[j][i] * elt2
 		}
 		net.outputResult[i] = sigmoide(x)
 	}
 }
 
 // ProcessBackPropagation: Launch back propagation in the network
-func ProcessBackPropagation(net Network, target []float64) {
-	for i := 0; i < net.outputs; i++ {
-		net.outputGradient[i] = (target[i] - net.outputResult[i]) * sigmoideDerivative(net.outputResult[i])
+func ProcessBackPropagation(net *Network, target []float64) {
+	for i, elt := range net.outputResult {
+		net.outputGradient[i] = (target[i] - elt) * sigmoideDerivative(elt)
 	}
 
-	for i := 0; i < net.hiddens; i++ {
+	for i, elt := range net.hiddenResult {
 		var temp float64
-		for j := 0; j < net.outputs; j++ {
-			temp += net.outputGradient[j] * net.outputWeights[i][j]
+
+		for j, elt2 := range net.outputGradient {
+			temp += elt2 * net.outputWeights[i][j]
 		}
-		net.hiddenGradient[i] = sigmoideDerivative(net.hiddenResult[i]) * temp
+
+		net.hiddenGradient[i] = sigmoideDerivative(elt) * temp
 	}
 
 	UpdateWeights(net)
 }
 
 // CreateNetwork: Create the neural network
-func CreateNetwork(nb_input, nb_hiden, nb_output int, rate float64) (net Network) {
+func CreateNetwork(nb_input, nb_hidden, nb_output int, rate float64) (net Network) {
 	new_net := Network{
-		inputs:  nb_input,
-		outputs: nb_output,
-		hiddens: nb_hiden,
-		rate:    rate,
+		rate: rate,
 	}
-	new_net = InitializeNetwork(new_net)
+	new_net = InitializeNetwork(&new_net, nb_input, nb_hidden, nb_output)
 	return new_net
 }
 
 // InitializeNetwork: Initialize the network
-func InitializeNetwork(net Network) Network {
+func InitializeNetwork(net *Network, input, hidden, output int) Network {
 
 	// Initialize all the array
-	net.networkInput = make([]float64, net.inputs)
-	net.hiddenResult = make([]float64, net.hiddens)
-	net.outputResult = make([]float64, net.outputs)
-	net.hiddenGradient = make([]float64, net.hiddens)
-	net.outputGradient = make([]float64, net.outputs)
+	net.networkInput = make([]float64, input)
+	net.hiddenResult = make([]float64, hidden)
+	net.outputResult = make([]float64, output)
+	net.hiddenGradient = make([]float64, hidden)
+	net.outputGradient = make([]float64, output)
 
-	net.hiddenWeights = createMatrixRandom(net.inputs, net.hiddens)
-	net.outputWeights = createMatrixRandom(net.hiddens, net.outputs)
+	net.hiddenWeights = createMatrixRandom(input, hidden)
+	net.outputWeights = createMatrixRandom(hidden, output)
 
-	return net
+	return *net
 }
 
 // Training: Train the network
-func Training(data, target []float64, net Network) {
+func Training(data, target []float64, net *Network) {
 
 	// Fill hiddenInput with Input Data
 	copy(net.networkInput, data)
@@ -116,7 +114,7 @@ func Training(data, target []float64, net Network) {
 }
 
 // ShowResult: Show the network result
-func ShowResult(data []float64, net Network) {
+func ShowResult(data []float64, net *Network) {
 
 	// Fill hiddenInput with Input Data
 	copy(net.networkInput, data)
