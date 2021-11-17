@@ -1,4 +1,4 @@
-module package_name
+module github.com/VincentKobz/neural-network-kit
 
 go 1.17
 
